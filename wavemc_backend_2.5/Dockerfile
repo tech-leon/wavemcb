@@ -16,4 +16,4 @@ COPY ./app ./app
 #EXPOSE 80
 
 # command to run on container start
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
