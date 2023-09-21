@@ -1,3 +1,4 @@
+import os
 import mysql.connector
 from . import emotions as em
 
@@ -5,7 +6,10 @@ def get(queries):
     # Create a cursor object to execute queries
     # Connect to the database
     with mysql.connector.connect(
-
+        host="192.168.16.2",
+        user=os.getenv("user"),
+        password=os.getenv("password"),
+        database=os.getenv("database")
     ) as mydb:
         mycursor = mydb.cursor()
         # Perform database operations
@@ -17,17 +21,17 @@ def get(queries):
     return results
 
 def about_emotions():
-    # titles = get("SELECT column_name\
-    #             FROM information_schema.columns\
-    #             WHERE table_name = 'AboutEmotions';\
-    #             ")
-    # emotions = get("SELECT * FROM AboutEmotions;")
-    # about_emotion = {}
-    # for i in range(0, len(emotions[0])):
-    #     about_emotion[titles[i][0]] = emotions[0][i]
+    titles = get("SELECT column_name\
+                FROM information_schema.columns\
+                WHERE table_name = 'AboutEmotions';\
+                ")
+    emotions = get("SELECT * FROM AboutEmotions;")
+    about_emotion = {}
+    for i in range(0, len(emotions[0])):
+        about_emotion[titles[i][0]] = emotions[0][i]
 
-    # return about_emotion
-    return em.about_emotions_data
+    return about_emotion
+    # return em.about_emotions_data
 
 def emotion_cards():
     # cards_dict = {}

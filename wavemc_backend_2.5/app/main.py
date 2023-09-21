@@ -30,16 +30,16 @@ async def redirect_docs():
 #    return {"item_id": item_id, "q": q}
 
 @app.get("/emotions")
-async def get_emotions(requirement):
+async def get_emotions(require):
     """(method) get
     require: string (about, cards).
     Send a string to get a json of responses.
     Returns:
         json: a json may contents lists insite.
     """
-    if requirement == "about":
+    if require == "about":
         return getd.about_emotions()
-    elif requirement == "cards":
+    elif require == "cards":
         return getd.emotion_cards()
 
 
