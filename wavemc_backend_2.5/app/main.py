@@ -22,7 +22,8 @@ app.add_middleware(
 async def redirect_docs():
     
     # return RedirectResponse("http://wavemocards.com/docs")
-    return "http://api.wavemocards.com/docs"
+    # return "http://api.wavemocards.com/docs"
+    return "http://apiv2.wavemocards.com/docs"
 
 
 #@app.get("/items/{item_id}")
