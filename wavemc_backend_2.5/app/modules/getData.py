@@ -2,14 +2,16 @@ import os
 import mysql.connector
 from . import emotions as em
 
+db_password = open('/run/secrets/db_root_password', 'r').read().strip()
+
 def get(queries):
     # Create a cursor object to execute queries
     # Connect to the database
     with mysql.connector.connect(
-        host="192.168.16.2",
-        user=os.getenv("user"),
-        password=os.getenv("password"),
-        database=os.getenv("database")
+        host="172.23.0.2",
+        user=os.getenv("USER"),
+        password=db_password,
+        database=os.getenv("DATABASE")
     ) as mydb:
         mycursor = mydb.cursor()
         # Perform database operations
