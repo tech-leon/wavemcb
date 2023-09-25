@@ -167,3 +167,5 @@ nginx/logs/
 nginx/*.json
 mariadb/mysql/wavemcdb/
 mariadb/mysql/sys/
+*.zip
+wavemcb2.*

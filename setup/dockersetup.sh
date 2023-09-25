@@ -5,6 +5,8 @@ wget https://wavemocards.com/docker/linuxsetting.sh
 chmod +x linuxsetting.sh; ./linuxsetting.sh
 
 sudo apt-get update -y
+sudo timedatectl set-timezone Australia/Perth
+timedatectl
 # Add Docker's official GPG key:
 sudo apt install vim zsh zip -y
 sudo apt-get install ca-certificates curl gnupg -y
