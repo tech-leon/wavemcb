@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 
-from .model import PostSchema, User, UserLogin, Add_emotions, Get_emotions, Update_emotions
+from .model import PostSchema, User, UserLogin, Add_emotions, Get_emotions, Update_emotions, Analysis_emo
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password
 from .database import db
@@ -24,13 +24,6 @@ app.add_middleware(
 )
 
 # route handlers
-
-@app.get("/", response_class=RedirectResponse, status_code=302, tags=["redirect"])
-async def redirect_docs():
-    return "http://api.wavemocards.com/docs"
-    # return "http://api2.wavemocards.com/docs"
-
-
 # get emotions informations
 @app.get("/emoinfo/{query}/", tags=["emotion informations"])
 async def get_emotions(query: str):
@@ -38,6 +31,25 @@ async def get_emotions(query: str):
         return db.about_emotions()
     elif query == "cards":
         return db.emotion_cards()
+
+
+# signup
+@app.post("/user/signup", tags=["user"])
+def create_user(user: User):  # = Body(...)):
+    # replace with db call, making sure to hash the password first
+    user.password = get_password_hash(user.password)
+    if user.day_of_birth == "":
+        user.day_of_birth = '0-0-0'
+    return {"data": f"{db.register_new_user(user)} new user created."}
+
+# login
+@app.post("/user/login", tags=["user"])
+def user_login(user: UserLogin):  # = Body(...)):
+    if db.check_user(user.user_name):
+        hashed_password = db.get_user_hashed_password(user.user_name)
+        if verify_password(user.password, hashed_password):
+            return signJWT(user.user_name)  # get access token
+    return {"error": "Wrong login details!"}
 
 
 # get user emo records
@@ -70,20 +82,13 @@ def delete_emotions(emo_id: int):
     return {"message": f"The emotion recard {emo_id} was deleted."}
 
 
-# signup
-@app.post("/user/signup", tags=["user"])
-def create_user(user: User):  # = Body(...)):
-    # replace with db call, making sure to hash the password first
-    user.password = get_password_hash(user.password)
-    if user.day_of_birth == "":
-        user.day_of_birth = '0-0-0'
-    return {"data": f"{db.register_new_user(user)} new user created."}
+@app.get("/emotions/analysis", dependencies=[Depends(JWTBearer())], tags=["emotions"])
+def analysis_emotions(days: Analysis_emo):
+    days.user_name = db.get_user_id(days.user_name)
+    return db.get_emo_by_days(days)
 
-# login
-@app.post("/user/login", tags=["user"])
-def user_login(user: UserLogin):  # = Body(...)):
-    if db.check_user(user.user_name):
-        hashed_password = db.get_user_hashed_password(user.user_name)
-        if verify_password(user.password, hashed_password):
-            return signJWT(user.user_name)  # get access token
-    return {"error": "Wrong login details!"}
+
+@app.get("/", response_class=RedirectResponse, status_code=302, tags=["redirect"])
+async def redirect_docs():
+    return "http://api.wavemocards.com/docs"
+    # return "http://api2.wavemocards.com/docs"

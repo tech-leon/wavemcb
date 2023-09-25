@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 
 JWT_SECRET = config("secret")
 JWT_ALGORITHM = config("algorithm")
-ACCESS_TOKEN_EXPIRE_SECOND = 60 * 30
+ACCESS_TOKEN_EXPIRE_SECOND = 60 * 60 * 6
 
 pwd_context =\
     CryptContext(schemes=["bcrypt"], deprecated="auto")

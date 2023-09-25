@@ -121,3 +121,15 @@ class Update_emotions(BaseModel):
     after_emo_level_2: int = Field(None, ge=1, le=5)
     after_emo_level_3: int = Field(None, ge=1, le=5)
     
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "user_name": "john2024",
+                "story": "我考試的分數不理想，讓我感到沮喪、失望和挫敗。",
+                "reaction": "我開始更加努力地讀書，找老師請教問題，並參加補習班。我還挑燈夜戰，誓死打敗全班第一．"
+            }
+        }
+class Analysis_emo(BaseModel):
+    user_name: str = Field(min_length=3, max_length=20)
+    start_day: date
+    end_day: date
