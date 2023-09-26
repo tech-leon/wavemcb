@@ -3,9 +3,9 @@ from fastapi import FastAPI, Body, Depends
 from pydantic import Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+import json as js
 
-
-from .model import PostSchema, User, UserLogin, Add_emotions, Get_emotions, Update_emotions, Analysis_emo
+from .model import PostSchema, User, UserLogin, Add_emotions, Get_emotions, Update_emotions, Analysis_emo, Email_checking
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password
 from .database import db
@@ -35,7 +35,7 @@ async def get_emotions(query: str):
 
 # signup
 @app.post("/user/signup", tags=["user"])
-def create_user(user: User):  # = Body(...)):
+def create_user(user: User):
     # replace with db call, making sure to hash the password first
     user.password = get_password_hash(user.password)
     if user.day_of_birth == "":
@@ -44,12 +44,18 @@ def create_user(user: User):  # = Body(...)):
 
 # login
 @app.post("/user/login", tags=["user"])
-def user_login(user: UserLogin):  # = Body(...)):
+def user_login(user: UserLogin): 
     if db.check_user(user.user_name):
         hashed_password = db.get_user_hashed_password(user.user_name)
         if verify_password(user.password, hashed_password):
             return signJWT(user.user_name)  # get access token
     return {"error": "Wrong login details!"}
+
+
+# email checking
+@app.post("/user/email", tags=["user"])
+def email_checking(email: Email_checking):
+    return {"message": db.check_emails(email)}
 
 
 # get user emo records
@@ -85,7 +91,10 @@ def delete_emotions(emo_id: int):
 @app.get("/emotions/analysis", dependencies=[Depends(JWTBearer())], tags=["emotions"])
 def analysis_emotions(days: Analysis_emo):
     days.user_name = db.get_user_id(days.user_name)
-    return db.get_emo_by_days(days)
+    analysed = db.get_emo_by_days(days)
+    if len(analysed) == 0:
+        return {"message": "No emotion records were found."}
+    return analysed
 
 
 @app.get("/", response_class=RedirectResponse, status_code=302, tags=["redirect"])

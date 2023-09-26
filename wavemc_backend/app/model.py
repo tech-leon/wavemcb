@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import date
 
+
 class PostSchema(BaseModel):
     # id: int = Field(default=None)
     # title: str = Field(...)
@@ -32,20 +33,21 @@ class User(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-            "title": "student",
-            "email": "johnwick@wavemocards.com",
-            "user_name": "john2024",
-            "password": "vEryStrongPassword",
-            "first_name": "John",
-            "last_name": "Wick",
-            "day_of_birth": "1964-09-02",
-            "gender": "M",
-            "addr_street": "101 Hollywood Street",
-            "addr_city": "Los Angeles",
-            "addr_postcode": 90001,
-            "phone": 2028638426
+                "title": "student",
+                "email": "johnwick@wavemocards.com",
+                "user_name": "john2024",
+                "password": "vEryStrongPassword",
+                "first_name": "John",
+                "last_name": "Wick",
+                "day_of_birth": "1964-09-02",
+                "gender": "M",
+                "addr_street": "101 Hollywood Street",
+                "addr_city": "Los Angeles",
+                "addr_postcode": 90001,
+                "phone": 2028638426
             }
         }
+
 
 class UserLogin(BaseModel):
     user_name: str = Field(min_length=3, max_length=20)
@@ -77,7 +79,7 @@ class Add_emotions(BaseModel):
     after_emo_level_1: int = Field(ge=1, le=5)
     after_emo_level_2: int = Field(None, ge=1, le=5)
     after_emo_level_3: int = Field(None, ge=1, le=5)
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -99,9 +101,11 @@ class Add_emotions(BaseModel):
                 "after_emo_level_3": 1
             }
         }
-        
+
+
 class Get_emotions(BaseModel):
     user_name: str = Field(min_length=3, max_length=20)
+
 
 class Update_emotions(BaseModel):
     emo_ID: int = Field(ge=1, le=65)
@@ -120,7 +124,7 @@ class Update_emotions(BaseModel):
     after_emo_level_1: int = Field(None, ge=1, le=5)
     after_emo_level_2: int = Field(None, ge=1, le=5)
     after_emo_level_3: int = Field(None, ge=1, le=5)
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -129,7 +133,28 @@ class Update_emotions(BaseModel):
                 "reaction": "我開始更加努力地讀書，找老師請教問題，並參加補習班。我還挑燈夜戰，誓死打敗全班第一．"
             }
         }
+
+
 class Analysis_emo(BaseModel):
     user_name: str = Field(min_length=3, max_length=20)
     start_day: date
     end_day: date
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "user_name": "john2024",
+                "start_day": "2023-09-24",
+                "end_day": "2023-09-25"
+            }
+        }
+
+class Email_checking(BaseModel):
+    email: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "johnwick@wavemocards.com",
+            }
+        }
