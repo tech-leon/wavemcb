@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import json as js
 
-from .model import PostSchema, User, UserLogin, Add_emotions, Get_emotions, Update_emotions, Analysis_emo, Email_checking
+from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, Analysis_emo, User_checking
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password
 from .database import db
@@ -13,7 +13,7 @@ from .database import db
 
 app = FastAPI(redoc_url=None)
 # Define the origins that are allowed to access API 
-origins = ["https://wavemocards.com"]
+origins = ["https://wavemocards.com", "https://frontendtesting.wavemocards,com"]
 # Add CORS middleware with the specified configuration.
 app.add_middleware(
     CORSMiddleware,
@@ -29,45 +29,57 @@ app.add_middleware(
 async def get_emotions(query: str):
     if query == "about":
         return db.about_emotions()
-    elif query == "cards":
+    if query == "cards":
         return db.emotion_cards()
-
+    return {"error": "Something went wrong! Contact the server administrator."}
 
 # signup
 @app.post("/user/signup", tags=["user"])
-def create_user(user: User):
+def create_user(user: User_signup):
     # replace with db call, making sure to hash the password first
     user.password = get_password_hash(user.password)
     if user.day_of_birth == "":
         user.day_of_birth = '0-0-0'
-    return {"data": f"{db.register_new_user(user)} new user created."}
+    result = db.register_new_user(user)
+    if result == 1:
+        return {"message": "The user was successfully registered."}
+    if result == 0:
+        return {"message": "The user exists."}
+    return {"error": "Something went wrong! Contact the server administrator."}
 
 # login
 @app.post("/user/login", tags=["user"])
-def user_login(user: UserLogin): 
-    if db.check_user(user.user_name):
+def user_login(user: User_login): 
+    if db.check_user(user.user_name)["user_name"] == True:
         hashed_password = db.get_user_hashed_password(user.user_name)
         if verify_password(user.password, hashed_password):
             return signJWT(user.user_name)  # get access token
     return {"error": "Wrong login details!"}
 
 
-# email checking
-@app.post("/user/email", tags=["user"])
-def email_checking(email: Email_checking):
-    return {"message": db.check_emails(email)}
+# user checking
+@app.post("/user/checking", tags=["user"])
+def user_checking(check: User_checking):
+    if check.user_name == None and check.email == None:
+        return {"error": "One of the fields must be provided."}
+    return {"message": db.check_user(check.user_name, check.email)}
 
 
 # get user emo records
 @app.get("/emotions", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def get_emotions(user_name: str = 'john2024', limit: int = 5):
-    return db.get_user_emos(db.get_user_id(user_name))[:limit]
+def get_emotions(user_name: str = 'john2024'):
+    if db.get_user_emos(db.get_user_id(user_name)) == False:
+        return {"message": "No emotions were found."}
+    return {"message": db.get_user_emos(db.get_user_id(user_name))}
 
 
 # add emo records
 @app.post("/emotions/add", dependencies=[Depends(JWTBearer())], tags=["emotions"])
 def add_emotions(emo: Add_emotions):
-    return {"data": f"{db.create_emo(emo)} emo has been added."}
+    result = db.create_emo(emo)
+    if result == 1:
+        return {"message": "The emotion was added successfully."}
+    return {"error": "Something went wrong! Contact the server administrator."}
 
 
 # update user emo records
@@ -76,6 +88,8 @@ def update_emotions(emo: Update_emotions):
     result = db.update_user_emo(emo)
     if result == 0:
         return {"error": "No such emo ID was found."}
+    if result == 1:
+        return {"message": "The emotion was updated successfully."}
     return { "message": f"{result}"}
 
 
@@ -85,13 +99,13 @@ def delete_emotions(emo_id: int):
     result = db.delete_user_emo(emo_id)
     if result == 0:
         return {"error": "No such emo ID was found."}
-    return {"message": f"The emotion recard {emo_id} was deleted."}
+    return {"message": f"The emotion {emo_id} was deleted."}
 
 
 @app.get("/emotions/analysis", dependencies=[Depends(JWTBearer())], tags=["emotions"])
 def analysis_emotions(days: Analysis_emo):
     days.user_name = db.get_user_id(days.user_name)
-    analysed = db.get_emo_by_days(days)
+    analysed = db.analysis_by_days(days)
     if len(analysed) == 0:
         return {"message": "No emotion records were found."}
     return analysed

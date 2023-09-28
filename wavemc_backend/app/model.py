@@ -16,13 +16,13 @@ class PostSchema(BaseModel):
         }
 
 
-class User(BaseModel):
+class User_signup(BaseModel):
     title: str = Field(None)
     email: str
     user_name: str = Field(min_length=3, max_length=20)
     password: str = Field(min_length=8)
-    first_name: str = Field(min_length=2, max_length=20)
-    last_name: str = Field(min_length=2, max_length=20)
+    first_name: str = Field(max_length=20)
+    last_name: str = Field(max_length=20)
     day_of_birth: date = Field(None)
     gender: str = Field(None)
     addr_street: str = Field(None)
@@ -49,7 +49,7 @@ class User(BaseModel):
         }
 
 
-class UserLogin(BaseModel):
+class User_login(BaseModel):
     user_name: str = Field(min_length=3, max_length=20)
     password: str = Field(min_length=8)
 
@@ -62,13 +62,26 @@ class UserLogin(BaseModel):
         }
 
 
+class User_checking(BaseModel):
+    email: str = Field(None)
+    user_name: str = Field(None, min_length=3, max_length=20)
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "johnwick@wavemocards.com",
+                "user_name": "john2024"
+            }
+        }
+
+
 class Add_emotions(BaseModel):
     user_name: str = Field(min_length=3, max_length=20)
     story: str = Field(None)
     reaction: str = Field(None)
     results: str = Field(None)
     feelings: str = Field(None)
-    expect: bool = Field(None)
+    expect: int = Field(None)
     actions: str = Field(None)
     emotion_card_1: int = Field(ge=1, le=65)
     emotion_card_2: int = Field(None, ge=1, le=65)
@@ -76,7 +89,7 @@ class Add_emotions(BaseModel):
     before_emo_level_1: int = Field(ge=1, le=5)
     before_emo_level_2: int = Field(None, ge=1, le=5)
     before_emo_level_3: int = Field(None, ge=1, le=5)
-    after_emo_level_1: int = Field(ge=1, le=5)
+    after_emo_level_1: int = Field(None, ge=1, le=5)
     after_emo_level_2: int = Field(None, ge=1, le=5)
     after_emo_level_3: int = Field(None, ge=1, le=5)
 
@@ -108,12 +121,12 @@ class Get_emotions(BaseModel):
 
 
 class Update_emotions(BaseModel):
-    emo_ID: int = Field(ge=1, le=65)
+    emo_ID: int
     story: str = Field(None)
     reaction: str = Field(None)
     results: str = Field(None)
     feelings: str = Field(None)
-    expect: bool = Field(None)
+    expect: int = Field(None, ge=1, le=3)
     actions: str = Field(None)
     emotion_card_1: int = Field(None, ge=1, le=65)
     emotion_card_2: int = Field(None, ge=1, le=65)
@@ -128,7 +141,7 @@ class Update_emotions(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "user_name": "john2024",
+                "emo_ID": 1,
                 "story": "我考試的分數不理想，讓我感到沮喪、失望和挫敗。",
                 "reaction": "我開始更加努力地讀書，找老師請教問題，並參加補習班。我還挑燈夜戰，誓死打敗全班第一．"
             }
@@ -146,15 +159,5 @@ class Analysis_emo(BaseModel):
                 "user_name": "john2024",
                 "start_day": "2023-09-24",
                 "end_day": "2023-09-25"
-            }
-        }
-
-class Email_checking(BaseModel):
-    email: str
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "johnwick@wavemocards.com",
             }
         }
