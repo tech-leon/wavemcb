@@ -4,8 +4,9 @@ from pydantic import Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import json as js
+from datetime import date
 
-from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, Analysis_emo, User_checking
+from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password
 from .database import db
@@ -103,9 +104,11 @@ def delete_emotions(emo_id: int):
 
 
 @app.get("/emotions/analysis", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def analysis_emotions(days: Analysis_emo):
-    days.user_name = db.get_user_id(days.user_name)
-    analysed = db.analysis_by_days(days)
+def analysis_emotions(user_name: str = "john2024", \
+                      start_day: date = "2023-09-24", \
+                      end_day: date = "2023-09-25"):
+    user_id = db.get_user_id(user_name)
+    analysed = db.analysis_by_days(user_id, start_day, end_day)
     if len(analysed) == 0:
         return {"message": "No emotion records were found."}
     return analysed

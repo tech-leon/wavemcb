@@ -147,17 +147,3 @@ class Update_emotions(BaseModel):
             }
         }
 
-
-class Analysis_emo(BaseModel):
-    user_name: str = Field(min_length=3, max_length=20)
-    start_day: date
-    end_day: date
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "user_name": "john2024",
-                "start_day": "2023-09-24",
-                "end_day": "2023-09-25"
-            }
-        }
