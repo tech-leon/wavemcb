@@ -62,6 +62,22 @@ class User_login(BaseModel):
         }
 
 
+class User_password(BaseModel):
+    current_password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8)
+    confirm_password: str = Field(min_length=8)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "current_password": "<PASSWORD>",
+                "new_password": "<NEW_PASSWORD>",
+                "confirm_password": "<NEW_PASSWORD>"
+            }
+
+        }
+
+
 class User_checking(BaseModel):
     email: str = Field(None)
     user_name: str = Field(None, min_length=3, max_length=20)

@@ -1,20 +1,21 @@
 import uvicorn
-from fastapi import FastAPI, Body, Depends
+from fastapi import FastAPI, Body, Depends, Request
 from pydantic import Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import json as js
 from datetime import date
 
-from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking
+from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password
 from .auth.auth_bearer import JWTBearer
-from .auth.auth_handler import signJWT, get_password_hash, verify_password
+from .auth.auth_handler import signJWT, get_password_hash, verify_password, decodeJWT
 from .database import db
 
 
 app = FastAPI(redoc_url=None)
 # Define the origins that are allowed to access API 
-origins = ["https://wavemocards.com", "https://frontendtesting.wavemocards,com"]
+origins = ["https://wavemocards.com", 
+           "https://frontendtesting.wavemocards.com",]
 # Add CORS middleware with the specified configuration.
 app.add_middleware(
     CORSMiddleware,
@@ -54,8 +55,23 @@ def user_login(user: User_login):
     if db.check_user(user.user_name)["user_name"] == True:
         hashed_password = db.get_user_hashed_password(user.user_name)
         if verify_password(user.password, hashed_password):
-            return signJWT(user.user_name)  # get access token
+            user_info = db.get_user_info(user.user_name)
+            user_token = signJWT(user.user_name)["access_token"]  # get access token
+            return {"access_token": user_token, "user_info": user_info}
     return {"error": "Wrong login details!"}
+
+
+# user change password
+# @app.put("/user/password", dependencies=[Depends(JWTBearer())], tags=["user"])
+# def update_password(password: User_password, request: Request):
+#     auth = request.headers.get('Authorization')
+#     print(decodeJWT(auth[7:]))
+#     result = db.update_user_emo(emo)
+#     if result == 0:
+#         return {"error": "No such emo ID was found."}
+#     if result == 1:
+#         return {"message": "The emotion was updated successfully."}
+#     return { "message": f"{result}"}
 
 
 # user checking

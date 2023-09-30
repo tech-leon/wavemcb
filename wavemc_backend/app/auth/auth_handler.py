@@ -29,8 +29,8 @@ def verify_password(plain_password, hashed_password):
 # function used for signing the JWT string
 
 
-def signJWT(user_id: str) -> Dict[str, str]:
-    payload = {"user_id": user_id,
+def signJWT(user_name: str) -> Dict[str, str]:
+    payload = {"user_name": user_name,
                "expires": time.time() + ACCESS_TOKEN_EXPIRE_SECOND}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
