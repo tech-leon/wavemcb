@@ -28,7 +28,7 @@ class User_signup(BaseModel):
     addr_street: str = Field(None)
     addr_city: str = Field(None)
     addr_postcode: int = Field(None)
-    phone: int = Field(None)
+    phone: int = Field(None, le=15)
 
     class Config:
         json_schema_extra = {
@@ -75,6 +75,33 @@ class User_password(BaseModel):
                 "confirm_password": "<NEW_PASSWORD>"
             }
 
+        }
+
+
+class User_infomation(BaseModel):
+    title: str = Field(None)
+    first_name: str = Field(max_length=20)
+    last_name: str = Field(max_length=20)
+    # day_of_birth: date = Field(None)
+    # gender: str = Field(None)
+    # addr_street: str = Field(None)
+    # addr_city: str = Field(None)
+    # addr_postcode: int = Field(None)
+    # phone: int = Field(None, le=15)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "student",
+                "first_name": "John",
+                "last_name": "Wick",
+                # "day_of_birth": "1964-09-02",
+                # "gender": "M",
+                # "addr_street": "101 Hollywood Street",
+                # "addr_city": "Los Angeles",
+                # "addr_postcode": 90001,
+                # "phone": 2028638426
+            }
         }
 
 

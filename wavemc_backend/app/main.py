@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 import json as js
 from datetime import date
 
-from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password
+from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password, decodeJWT
 from .database import db
@@ -61,17 +61,31 @@ def user_login(user: User_login):
     return {"error": "Wrong login details!"}
 
 
-# user change password
-# @app.put("/user/password", dependencies=[Depends(JWTBearer())], tags=["user"])
-# def update_password(password: User_password, request: Request):
-#     auth = request.headers.get('Authorization')
-#     print(decodeJWT(auth[7:]))
-#     result = db.update_user_emo(emo)
-#     if result == 0:
-#         return {"error": "No such emo ID was found."}
-#     if result == 1:
-#         return {"message": "The emotion was updated successfully."}
-#     return { "message": f"{result}"}
+# user update password
+@app.put("/user/password", dependencies=[Depends(JWTBearer())], tags=["user"])
+def update_password(password: User_password, request: Request):
+    user_auth = request.headers.get('Authorization')
+    current_user = decodeJWT(user_auth[7:])
+    hashed_password = db.get_user_hashed_password(current_user["user_name"])
+    if not verify_password(password.current_password, hashed_password):
+        return {"error": "Wrong password! Please try again."}
+    if password.new_password != password.confirm_password:
+        return {"error": "Please check your new passwords!"}
+    if password.current_password == password.new_password:
+        return {"error": \
+            "The new password should not be the same as the current password!"}
+    new_password_hashed = get_password_hash(password.new_password)
+    db.update_user_password(current_user["user_name"], new_password_hashed)
+    return { "message": "The passwored was successfully updated."}
+
+
+# update user info
+@app.put("/user/info", dependencies=[Depends(JWTBearer())], tags=["user"])
+def update_user_imfo(user_info: User_infomation, request: Request):
+    user_auth = request.headers.get('Authorization')
+    current_user = decodeJWT(user_auth[7:])
+    db.update_user_info(current_user["user_name"], user_info)
+    return { "message": "The info was successfully updated."}
 
 
 # user checking
