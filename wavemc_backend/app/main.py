@@ -76,7 +76,7 @@ def update_password(password: User_password, request: Request):
             "The new password should not be the same as the current password!"}
     new_password_hashed = get_password_hash(password.new_password)
     db.update_user_password(current_user["user_name"], new_password_hashed)
-    return { "message": "The passwored was successfully updated."}
+    return { "message": "The password was successfully updated."}
 
 
 # update user info
@@ -84,8 +84,12 @@ def update_password(password: User_password, request: Request):
 def update_user_info(user_info: User_infomation, request: Request):
     user_auth = request.headers.get('Authorization')
     current_user = decodeJWT(user_auth[7:])
-    db.update_user_info(current_user["user_name"], user_info)
-    return { "message": "The info was successfully updated."}
+    result = db.update_user_info(current_user["user_name"], user_info)
+    if result == 1:
+        return { "message": "The info was successfully updated."}
+    if result == 0:
+        return {"message": "Nothing changed."}
+    return {"error": "Something went wrong! Contact the server administrator."}
 
 
 # user checking

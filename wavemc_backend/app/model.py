@@ -82,7 +82,7 @@ class User_infomation(BaseModel):
     title: str = Field(None)
     first_name: str = Field(max_length=20)
     last_name: str = Field(max_length=20)
-    # day_of_birth: date = Field(None)
+    day_of_birth: date
     # gender: str = Field(None)
     # addr_street: str = Field(None)
     # addr_city: str = Field(None)
@@ -95,7 +95,7 @@ class User_infomation(BaseModel):
                 "title": "student",
                 "first_name": "John",
                 "last_name": "Wick",
-                # "day_of_birth": "1964-09-02",
+                "day_of_birth": "1964-09-02",
                 # "gender": "M",
                 # "addr_street": "101 Hollywood Street",
                 # "addr_city": "Los Angeles",
