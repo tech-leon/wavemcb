@@ -81,7 +81,7 @@ def update_password(password: User_password, request: Request):
 
 # update user info
 @app.put("/user/info", dependencies=[Depends(JWTBearer())], tags=["user"])
-def update_user_imfo(user_info: User_infomation, request: Request):
+def update_user_info(user_info: User_infomation, request: Request):
     user_auth = request.headers.get('Authorization')
     current_user = decodeJWT(user_auth[7:])
     db.update_user_info(current_user["user_name"], user_info)
