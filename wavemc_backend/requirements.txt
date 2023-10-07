@@ -7,3 +7,4 @@ mysql-connector-python==8.0.33
 email-validator==2.0.0
 passlib==1.7.4
 bcrypt==4.0.1
+fastapi-mail==1.4.1

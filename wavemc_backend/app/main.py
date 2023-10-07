@@ -1,14 +1,16 @@
 import uvicorn
-from fastapi import FastAPI, Body, Depends, Request
+from fastapi import FastAPI, Body, Depends, Request, Header
 from pydantic import Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import json as js
 from datetime import date
 
-from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation
+from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation, Forgotten
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password, decodeJWT
+from .auth.auth_forgotten import one_time_signJWT, one_time_decodeJWT
+from .email import messenger
 from .database import db
 
 
@@ -37,7 +39,7 @@ async def get_emotions(query: str):
 
 # signup
 @app.post("/user/signup", tags=["user"])
-def create_user(user: User_signup):
+async def create_user(user: User_signup):
     # replace with db call, making sure to hash the password first
     user.password = get_password_hash(user.password)
     if user.day_of_birth == "":
@@ -51,7 +53,7 @@ def create_user(user: User_signup):
 
 # login
 @app.post("/user/login", tags=["user"])
-def user_login(user: User_login): 
+async def user_login(user: User_login): 
     if db.check_user(user.user_name)["user_name"] == True:
         hashed_password = db.get_user_hashed_password(user.user_name)
         if verify_password(user.password, hashed_password):
@@ -63,7 +65,7 @@ def user_login(user: User_login):
 
 # user update password
 @app.put("/user/password", dependencies=[Depends(JWTBearer())], tags=["user"])
-def update_password(password: User_password, request: Request):
+async def update_password(password: User_password, request: Request):
     user_auth = request.headers.get('Authorization')
     current_user = decodeJWT(user_auth[7:])
     hashed_password = db.get_user_hashed_password(current_user["user_name"])
@@ -81,7 +83,7 @@ def update_password(password: User_password, request: Request):
 
 # update user info
 @app.put("/user/info", dependencies=[Depends(JWTBearer())], tags=["user"])
-def update_user_info(user_info: User_infomation, request: Request):
+async def update_user_info(user_info: User_infomation, request: Request):
     user_auth = request.headers.get('Authorization')
     current_user = decodeJWT(user_auth[7:])
     result = db.update_user_info(current_user["user_name"], user_info)
@@ -94,7 +96,7 @@ def update_user_info(user_info: User_infomation, request: Request):
 
 # user checking
 @app.post("/user/checking", tags=["user"])
-def user_checking(check: User_checking):
+async def user_checking(check: User_checking):
     if check.user_name == None and check.email == None:
         return {"error": "One of the fields must be provided."}
     return {"message": db.check_user(check.user_name, check.email)}
@@ -102,7 +104,7 @@ def user_checking(check: User_checking):
 
 # get user emo records
 @app.get("/emotions", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def get_emotions(user_name: str = 'john2024'):
+async def get_emotions(user_name: str = 'john2024'):
     if db.get_user_emos(db.get_user_id(user_name)) == False:
         return {"message": "No emotions were found."}
     return {"message": db.get_user_emos(db.get_user_id(user_name))}
@@ -110,7 +112,7 @@ def get_emotions(user_name: str = 'john2024'):
 
 # add emo records
 @app.post("/emotions/add", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def add_emotions(emo: Add_emotions):
+async def add_emotions(emo: Add_emotions):
     result = db.create_emo(emo)
     if result == 1:
         return {"message": "The emotion was added successfully."}
@@ -119,7 +121,7 @@ def add_emotions(emo: Add_emotions):
 
 # update user emo records
 @app.put("/emotions/update", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def update_emotions(emo: Update_emotions):
+async def update_emotions(emo: Update_emotions):
     result = db.update_user_emo(emo)
     if result == 0:
         return {"error": "No such emo ID was found."}
@@ -130,7 +132,7 @@ def update_emotions(emo: Update_emotions):
 
 # delete user emo records
 @app.delete("/emotions/delete/{emo_id}", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def delete_emotions(emo_id: int):
+async def delete_emotions(emo_id: int):
     result = db.delete_user_emo(emo_id)
     if result == 0:
         return {"error": "No such emo ID was found."}
@@ -138,7 +140,7 @@ def delete_emotions(emo_id: int):
 
 
 @app.get("/emotions/analysis", dependencies=[Depends(JWTBearer())], tags=["emotions"])
-def analysis_emotions(user_name: str = "john2024", \
+async def analysis_emotions(user_name: str = "john2024", \
                       start_day: date = "2023-09-24", \
                       end_day: date = "2023-09-25"):
     user_id = db.get_user_id(user_name)
@@ -148,7 +150,46 @@ def analysis_emotions(user_name: str = "john2024", \
     return analysed
 
 
-@app.get("/", response_class=RedirectResponse, status_code=302, tags=["redirect"])
-async def redirect_docs():
-    return "http://api.wavemocards.com/docs"
-    # return "http://api2.wavemocards.com/docs"
+# forgotten user password
+# @app.post("/forgotten/user_password", tags=["forgotten"])
+# async def forgotten_user_password(email: Forgotten):
+#     if not db.check_user(email=email.email)["email"]:
+#         return {"message": "None of email addresses were found."}
+#     hashed_pwd = db.get_pwd_by_email(email.email)
+#     reset_pwd_token = one_time_signJWT(email.email, hashed_pwd)
+#     messenger.forgot_password(email.email, reset_pwd_token)
+    
+#     return {"message": "The pin code was sent."}
+
+
+# https://wavemocards.com/resetPassword.html
+# @app.get("/user/reset_password", response_class=RedirectResponse, status_code=302, tags=["user"])
+# async def reset_password(reset_token: str, email: str):
+#     print(reset_password_token, email)
+#     hashed_pwd = db.get_pwd_by_email(email)
+#     print(one_time_decodeJWT(email, hashed_pwd, reset_password_token))
+    
+#     if one_time_decodeJWT(email, hashed_pwd, reset_password_token) == {}:
+#         return "https://wavemocards.com"
+    
+#     return "https://wavemocards.com/resetPassword.html"
+
+@app.get("/", response_class=RedirectResponse, status_code=301, tags=["redirect"])
+async def redirect_to_home_page():
+    return "https://wavemocards.com"
+
+
+# @app.get("/endpoint", dependencies=[Depends(JWTBearer())], 
+#      tags=["endpoint"])
+# async def endpoint(
+#     pass_code: str,
+#     request: Request,
+#     x_forwarded_for: str = Header(None, alias='X-Forwarded-For'),
+#     x_real_ip: str = Header(None, alias='X-Real-IP')):
+    
+#     if not db.passed(pass_code):
+#         return {"error": "Invalid"}
+#     client_host = request.client.host
+#     return {"X-Forwarded-For": x_forwarded_for, 
+#             "X-Real-Ip": x_real_ip,
+#             "request": client_host}

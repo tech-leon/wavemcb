@@ -28,7 +28,7 @@ class User_signup(BaseModel):
     addr_street: str = Field(None)
     addr_city: str = Field(None)
     addr_postcode: int = Field(None)
-    phone: int = Field(None, le=15)
+    phone: int = Field(None)
 
     class Config:
         json_schema_extra = {
@@ -190,3 +190,5 @@ class Update_emotions(BaseModel):
             }
         }
 
+class Forgotten(BaseModel):
+    email: str 
