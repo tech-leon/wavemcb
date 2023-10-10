@@ -5,11 +5,7 @@ import jwt
 from decouple import config
 
 JWT_ALGORITHM = config("algorithm")
-ACCESS_TOKEN_EXPIRE_SECOND = 60 * 15
-
-
-def one_time_token_response(token: str):
-    return {"reset_token": token}
+ACCESS_TOKEN_EXPIRE_SECOND = 60 * 60 * 6
 
 
 def one_time_signJWT(email: str, hashed_pwd: str) -> Dict[str, str]:

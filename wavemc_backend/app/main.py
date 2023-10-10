@@ -1,3 +1,4 @@
+import os
 import uvicorn
 from fastapi import FastAPI, Body, Depends, Request, Header
 from pydantic import Field
@@ -6,10 +7,10 @@ from fastapi.responses import RedirectResponse
 import json as js
 from datetime import date
 
-from .model import PostSchema, User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation, Forgotten
-from .auth.auth_bearer import JWTBearer
+from .model import User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation, Reset_email_checking, Reset_password
+from .auth.auth_bearer import JWTBearer, One_time_JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password, decodeJWT
-from .auth.auth_forgotten import one_time_signJWT, one_time_decodeJWT
+from .auth.auth_reset import one_time_signJWT, one_time_decodeJWT
 from .email import messenger
 from .database import db
 
@@ -150,46 +151,31 @@ async def analysis_emotions(user_name: str = "john2024", \
     return analysed
 
 
-# forgotten user password
-# @app.post("/forgotten/user_password", tags=["forgotten"])
-# async def forgotten_user_password(email: Forgotten):
-#     if not db.check_user(email=email.email)["email"]:
-#         return {"message": "None of email addresses were found."}
-#     hashed_pwd = db.get_pwd_by_email(email.email)
-#     reset_pwd_token = one_time_signJWT(email.email, hashed_pwd)
-#     messenger.forgot_password(email.email, reset_pwd_token)
-    
-#     return {"message": "The pin code was sent."}
+# email checking and send email for reset password
+@app.post("/reset/send/email", tags=["resets"])
+async def send_email(email: Reset_email_checking):
+    if not db.check_user(email=email.email)["email"]:
+        return {"message": "None of email addresses were found."}
+    hashed_pwd = db.get_pwd_by_email(email.email)
+    reset_pwd_token = one_time_signJWT(email.email, hashed_pwd)
+    result = await messenger.send(email.email, reset_pwd_token)
+    return {"message": "The email was sent."}
 
 
-# https://wavemocards.com/resetPassword.html
-# @app.get("/user/reset_password", response_class=RedirectResponse, status_code=302, tags=["user"])
-# async def reset_password(reset_token: str, email: str):
-#     print(reset_password_token, email)
-#     hashed_pwd = db.get_pwd_by_email(email)
-#     print(one_time_decodeJWT(email, hashed_pwd, reset_password_token))
+# reset user password
+@app.put("/reset/password", 
+        dependencies=[Depends(One_time_JWTBearer())], 
+        tags=["resets"])
+async def reset_password(user_resets: Reset_password):
+    if user_resets.new_password != user_resets.confirm_password:
+        return {"error": "Please check your new passwords!"}
+    user_name = db.get_user_name_by_email(user_resets.email)
+    new_password_hashed = get_password_hash(user_resets.new_password)
     
-#     if one_time_decodeJWT(email, hashed_pwd, reset_password_token) == {}:
-#         return "https://wavemocards.com"
-    
-#     return "https://wavemocards.com/resetPassword.html"
+    result = db.update_user_password(user_name, new_password_hashed)
+    return { "message": "The password was successfully updated."}
+
 
 @app.get("/", response_class=RedirectResponse, status_code=301, tags=["redirect"])
 async def redirect_to_home_page():
     return "https://wavemocards.com"
-
-
-# @app.get("/endpoint", dependencies=[Depends(JWTBearer())], 
-#      tags=["endpoint"])
-# async def endpoint(
-#     pass_code: str,
-#     request: Request,
-#     x_forwarded_for: str = Header(None, alias='X-Forwarded-For'),
-#     x_real_ip: str = Header(None, alias='X-Real-IP')):
-    
-#     if not db.passed(pass_code):
-#         return {"error": "Invalid"}
-#     client_host = request.client.host
-#     return {"X-Forwarded-For": x_forwarded_for, 
-#             "X-Real-Ip": x_real_ip,
-#             "request": client_host}

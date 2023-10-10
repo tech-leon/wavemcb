@@ -2,20 +2,6 @@ from pydantic import BaseModel, Field
 from datetime import date
 
 
-class PostSchema(BaseModel):
-    # id: int = Field(default=None)
-    # title: str = Field(...)
-    # content: str = Field(...)
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "title": "Securing FastAPI applications with JWT.",
-                "content": "In this tutorial, you'll learn how to secure your application by enabling authentication using JWT. We'll be using PyJWT to sign, encode and decode JWT tokens...."
-            }
-        }
-
-
 class User_signup(BaseModel):
     title: str = Field(None)
     email: str
@@ -190,5 +176,13 @@ class Update_emotions(BaseModel):
             }
         }
 
-class Forgotten(BaseModel):
+class Reset_email_checking(BaseModel):
     email: str 
+    
+
+class Reset_password(BaseModel):
+    email: str
+    new_password: str = Field(min_length=8)
+    confirm_password: str = Field(min_length=8)
+    
+    

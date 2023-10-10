@@ -163,9 +163,14 @@ cython_debug/
 .DS_Store
 compose.yaml
 db*
+nginx/
 nginx/logs/
 nginx/*.json
-mariadb/mysql/wavemcdb/
-mariadb/mysql/sys/
+mariadb/
+wavemcdb/
+mariadb/wavemcdb/
+mariadb/sys/
 *.zip
 wavemcb2.*
+.vscode/
+setup/
