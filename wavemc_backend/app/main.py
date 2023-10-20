@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 import json as js
 from datetime import date
 
-from .model import User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation, Reset_email_checking, Reset_password
+from .model import User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation, Send_emails, Reset_password
 from .auth.auth_bearer import JWTBearer, One_time_JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password, decodeJWT
 from .auth.auth_reset import one_time_signJWT, one_time_decodeJWT
@@ -152,13 +152,23 @@ async def analysis_emotions(user_name: str = "john2024", \
 
 
 # email checking and send email for reset password
-@app.post("/reset/send/email", tags=["resets"])
-async def send_email(email: Reset_email_checking):
+@app.post("/email/password", tags=["email"])
+async def reset_password_email(email: Send_emails):
     if not db.check_user(email=email.email)["email"]:
-        return {"message": "None of email addresses were found."}
+        return {"error": "None of email addresses were found."}
     hashed_pwd = db.get_pwd_by_email(email.email)
     reset_pwd_token = one_time_signJWT(email.email, hashed_pwd)
-    result = await messenger.send(email.email, reset_pwd_token)
+    result = await messenger.send_reset_pwd(email.email, reset_pwd_token)
+    return {"message": "The email was sent."}
+
+
+# email checking and send email for user name.
+@app.post("/email/username", tags=["email"])
+async def username_email(email: Send_emails):
+    if not db.check_user(email=email.email)["email"]:
+        return {"error": "None of email addresses were found."}
+    user_name = db.get_user_name_by_email(email.email)
+    result = await messenger.send_user_name(user_name, email.email)
     return {"message": "The email was sent."}
 
 

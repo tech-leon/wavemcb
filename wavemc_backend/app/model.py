@@ -176,7 +176,7 @@ class Update_emotions(BaseModel):
             }
         }
 
-class Reset_email_checking(BaseModel):
+class Send_emails(BaseModel):
     email: str 
     
 
