@@ -474,5 +474,25 @@
             "Description": "因為期待、興奮或緊張而引起的情感狀態，通常伴隨著心跳加快。",
             "Example": "在逛街時遇到偶像，我非常激動，興奮地跑去和他拍照。"
         }
-    }
+    },
+    "emos_titles": [
+        "emo_ID",
+        "user_ID",
+        "story",
+        "reaction",
+        "results",
+        "feelings",
+        "expect",
+        "actions",
+        "emotion_card_1",
+        "emotion_card_2",
+        "emotion_card_3",
+        "before_emo_level_1",
+        "before_emo_level_2",
+        "before_emo_level_3",
+        "after_emo_level_1",
+        "after_emo_level_2",
+        "after_emo_level_3",
+        "create_time","share"
+    ]
 }
