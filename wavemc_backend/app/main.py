@@ -17,7 +17,8 @@ from .database import db
 
 app = FastAPI(redoc_url=None)
 # Define the origins that are allowed to access API 
-origins = ["https://wavemocards.com", 
+origins = ["https://wavemocards.com",
+           "https://www.wavemocards.com",
            "https://frontendtesting.wavemocards.com",]
 # Add CORS middleware with the specified configuration.
 app.add_middleware(
