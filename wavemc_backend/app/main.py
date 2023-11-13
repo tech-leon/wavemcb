@@ -155,7 +155,7 @@ async def analysis_emotions(user_name: str = "john2024", \
 @app.post("/reset/send/email", tags=["resets"])
 async def send_email(email: Reset_email_checking):
     if not db.check_user(email=email.email)["email"]:
-        return {"message": "None of email addresses were found."}
+        return {"message": "The email was sent"}
     hashed_pwd = db.get_pwd_by_email(email.email)
     reset_pwd_token = one_time_signJWT(email.email, hashed_pwd)
     result = await messenger.send(email.email, reset_pwd_token)
