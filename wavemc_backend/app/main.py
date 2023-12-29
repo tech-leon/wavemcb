@@ -28,6 +28,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# test
+@app.get("/ip", tags=["test"])
+async def get_ip(request: Request):
+    # Get user ip, city and country provided by Cloudflare
+    user_ip = request.headers.get('CF-Connecting-IP')
+    city = request.headers.get('CF-IPCity')
+    country = request.headers.get('CF-IPCountry')
+    return {"user_ip": user_ip,"city": city,"country": country}
+
 # route handlers
 # get emotions informations
 @app.get("/emoinfo/{query}/", tags=["emotion informations"])
@@ -155,7 +164,9 @@ async def analysis_emotions(user_name: str = "john2024", \
 @app.post("/reset/send/email", tags=["resets"])
 async def send_email(email: Reset_email_checking):
     if not db.check_user(email=email.email)["email"]:
-        return {"message": "The email was sent"}
+        await db.record_forget_password(email.email, False)
+        return {"message": "The email was sent!"}
+    await db.record_forget_password(email.email, True)
     hashed_pwd = db.get_pwd_by_email(email.email)
     reset_pwd_token = one_time_signJWT(email.email, hashed_pwd)
     result = await messenger.send(email.email, reset_pwd_token)
@@ -166,7 +177,7 @@ async def send_email(email: Reset_email_checking):
 @app.put("/reset/password", 
         dependencies=[Depends(One_time_JWTBearer())], 
         tags=["resets"])
-async def reset_password(user_resets: Reset_password):
+async def reset_password(user_resets: Reset_password, request: Request):
     if user_resets.new_password != user_resets.confirm_password:
         return {"error": "Please check your new passwords!"}
     user_name = db.get_user_name_by_email(user_resets.email)
