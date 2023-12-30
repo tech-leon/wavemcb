@@ -141,6 +141,7 @@ async def delete_emotions(emo_id: int):
     return {"message": f"The emotion {emo_id} was deleted."}
 
 
+# get emotion analysis
 @app.get("/emotions/analysis", dependencies=[Depends(JWTBearer())], tags=["emotions"])
 async def analysis_emotions(user_name: str = "john2024", \
                       start_day: date = "2023-09-24", \
@@ -180,3 +181,8 @@ async def reset_password(user_resets: Reset_password):
 @app.get("/", response_class=RedirectResponse, status_code=301, tags=["redirect"])
 async def redirect_to_home_page():
     return "https://wavemocards.com"
+
+
+
+#TODO1: remove email checking responses to reset password.
+#TODO2: remove the example of model.
