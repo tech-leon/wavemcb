@@ -31,12 +31,12 @@ app.add_middleware(
 
 # route handlers
 # get emotions informations
-@app.get("/emoinfo/{query}/", tags=["emotion informations"])
-async def get_emotions(query: str):
+@app.get("/emoinfo/", tags=["emotion informations"])
+async def get_emotions(query: str, lang: str='zh-TW'):
     if query == "about":
         return db.about_emotions()
     if query == "cards":
-        return db.emotion_cards()
+        return db.emotion_cards(lang)
     return {"error": "Something went wrong! Contact the server administrator."}
 
 # signup
