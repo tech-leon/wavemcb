@@ -104,6 +104,11 @@ class User_checking(BaseModel):
         }
 
 
+class Share_emotions(BaseModel):
+    emo_ID: int
+    user_name: str = Field(min_length=3, max_length=20)
+
+
 class Add_emotions(BaseModel):
     user_name: str = Field(min_length=3, max_length=20)
     story: str = Field(None)
@@ -145,8 +150,8 @@ class Add_emotions(BaseModel):
         }
 
 
-class Get_emotions(BaseModel):
-    user_name: str = Field(min_length=3, max_length=20)
+# class Get_emotions(BaseModel):
+#     user_name: str = Field(min_length=3, max_length=20)
 
 
 class Update_emotions(BaseModel):

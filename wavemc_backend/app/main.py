@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 import json as js
 from datetime import date
 
-from .model import User_signup, User_login, Add_emotions, Get_emotions, Update_emotions, User_checking, User_password, User_infomation, Reset_email_checking, Reset_password
+from .model import User_signup, User_login, Add_emotions, Update_emotions, User_checking, User_password, User_infomation, Reset_email_checking, Reset_password, Share_emotions
 from .auth.auth_bearer import JWTBearer, One_time_JWTBearer
 from .auth.auth_handler import signJWT, get_password_hash, verify_password, decodeJWT
 from .auth.auth_reset import one_time_signJWT, one_time_decodeJWT
@@ -107,9 +107,35 @@ async def user_checking(check: User_checking):
 # get user emo records
 @app.get("/emotions", dependencies=[Depends(JWTBearer())], tags=["emotions"])
 async def get_emotions(user_name: str = 'john2024'):
-    if db.get_user_emos(db.get_user_id(user_name)) == False:
+    result = db.get_user_emos(db.get_user_id(user_name))
+    if result == False:
         return {"message": "No emotions were found."}
-    return {"message": db.get_user_emos(db.get_user_id(user_name))}
+    return {"message": result}
+
+
+# emo shares
+@app.post("/emotions/share", dependencies=[Depends(JWTBearer())], tags=["emotions"])
+async def share_emotions(share_emo: Share_emotions, request: Request):
+    result = db.share_user_emo(share_emo)
+    if result == 1:
+        return {"message": "The emotion was shared successfully."}
+    if result == 2:
+        return {"message": "The user did not exist."}
+    if result == 3:
+        return {"warning": "The same emotion couldn't be shared with the same person twice!"}
+    print(result)
+    return {"error": "Something went wrong! Contact the server administrator."}
+
+
+# emo unshares
+@app.post("/emotions/unshare", dependencies=[Depends(JWTBearer())], tags=["emotions"])
+async def unshare_emotions(share_emo: Share_emotions, request: Request):
+    result = db.unshare_user_emo(share_emo)
+    if result == 1:
+        return {"message": "The shared emotion was deleted successfully."}
+    if result == 2:
+        return {"error": "The ID and Name did not match."}
+    return {"error": "Something went wrong! Contact the server administrator."}
 
 
 # add emo records
