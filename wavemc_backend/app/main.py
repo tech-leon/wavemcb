@@ -1,5 +1,6 @@
 import os
 import uvicorn
+from decouple import config
 from fastapi import FastAPI, Body, Depends, Request, Header
 from pydantic import Field
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,11 +16,20 @@ from .email import messenger
 from .database import db
 
 
-app = FastAPI(redoc_url=None)
+tags_metadata = [
+    {
+        "name": "emotion informations",
+        "description": "lang = zh-TW or ja",
+    }
+]
+app = FastAPI(
+                title="Wave Emotion Cards",
+                version="1.0.2",
+                openapi_tags=tags_metadata,
+                redoc_url=None
+            )
 # Define the origins that are allowed to access API 
-origins = ["https://wavemocards.com",
-           "https://www.wavemocards.com",
-           "https://frontendtesting.wavemocards.com",]
+origins = config("origins")
 # Add CORS middleware with the specified configuration.
 app.add_middleware(
     CORSMiddleware,
@@ -110,6 +120,32 @@ async def get_emotions(user_name: str = 'john2024'):
     if db.get_user_emos(db.get_user_id(user_name)) == False:
         return {"message": "No emotions were found."}
     return {"message": db.get_user_emos(db.get_user_id(user_name))}
+
+
+# emo shares
+# @app.post("/emotions/share", dependencies=[Depends(JWTBearer())], tags=["emotions"])
+# async def share_emotions(share_emo: Share_emotions, request: Request):
+#     result, share_ID = db.share_user_emo(share_emo)
+#     if result == 1:
+#         return {"message": "The emotion was shared successfully.",
+#                 "share_ID": share_ID}
+#     if result == 2:
+#         return {"message": "The user did not exist."}
+#     if result == 3:
+#         return {"warning": "The same emotion couldn't be shared with the same person twice!"}
+#     print(result)
+#     return {"error": "Something went wrong! Contact the server administrator."}
+
+
+# emo unshares
+@app.delete("/emotions/unshare", dependencies=[Depends(JWTBearer())], tags=["emotions"])
+async def unshare_emotions(share_ID: int):
+    result = db.unshare_user_emo(share_ID)
+    if result == 1:
+        return {"message": "The shared emotion was deleted successfully."}
+    if result == 2:
+        return {"error": "The ID and Name did not match."}
+    return {"error": "Something went wrong! Contact the server administrator."}
 
 
 # add emo records

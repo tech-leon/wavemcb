@@ -494,5 +494,38 @@
         "after_emo_level_2",
         "after_emo_level_3",
         "create_time","share"
+    ],
+    "being_share_titles": [
+        "emo_ID",
+        "owner_name",
+        "story",
+        "reaction",
+        "results",
+        "feelings",
+        "expect",
+        "actions",
+        "emotion_card_1",
+        "emotion_card_2",
+        "emotion_card_3",
+        "before_emo_level_1",
+        "before_emo_level_2",
+        "before_emo_level_3",
+        "after_emo_level_1",
+        "after_emo_level_2",
+        "after_emo_level_3",
+        "create_time",
+        "share_time",
+        "share_status"
+    ],
+    "shared_titles":[
+        "share_ID",
+        "shared_to_user",
+        "status",
+        "share_time"
+    ],
+    "shared_status":[
+        "unread",
+        "process",
+        "finished"
     ]
 }
