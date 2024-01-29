@@ -24,7 +24,7 @@ tags_metadata = [
 ]
 app = FastAPI(
                 title="Wave Emotion Cards",
-                version="1.0.2",
+                version="1.0.4",
                 openapi_tags=tags_metadata,
                 redoc_url=None
             )
@@ -41,7 +41,7 @@ app.add_middleware(
 
 # route handlers
 # get emotions informations
-@app.get("/emoinfo/", tags=["emotion informations"])
+@app.get("/emoinfo/{query}", tags=["emotion informations"])
 async def get_emotions(query: str, lang: str='zh-TW'):
     if query == "about":
         return db.about_emotions()
