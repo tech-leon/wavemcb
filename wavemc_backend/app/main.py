@@ -15,6 +15,7 @@ from .auth.auth_reset import one_time_signJWT, one_time_decodeJWT
 from .email import messenger
 from .database import db
 
+version = config("version")
 
 tags_metadata = [
     {
@@ -24,7 +25,7 @@ tags_metadata = [
 ]
 app = FastAPI(
                 title="Wave Emotion Cards",
-                version="1.0.4",
+                version=version,
                 openapi_tags=tags_metadata,
                 redoc_url=None
             )
